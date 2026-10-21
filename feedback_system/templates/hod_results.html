@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block title %}HOD Results{% endblock %}
+{% block body %}
+<div class="container page">
+  <div class="page-header"><h1>Feedback results</h1>
+    <nav class="subnav">
+      <a href="{{ url_for('hod.dashboard') }}">Dashboard</a>
+      <a href="{{ url_for('hod.forms') }}">Forms</a>
+      <a href="{{ url_for('hod.results') }}" class="active">Results</a>
+      <a href="{{ url_for('hod.second_faculty') }}">Second Faculty</a>
+    </nav>
+  </div>
+  {% if forms %}
+  <table class="data-table">
+    <thead><tr><th>Title</th><th>Category</th><th>Subject</th><th>Responses</th><th>Status</th></tr></thead>
+    <tbody>{% for f in forms %}<tr>
+      <td>{{ f.title }}</td><td>{{ f.category or 'main' }}</td>
+      <td>{{ f.snapshot_subject_code or '—' }}</td>
+      <td>{{ f.responses }}</td><td>{{ f.status }}</td>
+    </tr>{% endfor %}</tbody>
+  </table>
+  {% else %}<p class="muted">No published or closed forms in your department scope.</p>{% endif %}
+</div>
+{% endblock %}

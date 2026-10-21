@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% import '_macros.html' as m %}
+{% block title %}{{ form.subject_name }} results{% endblock %}
+{% block body %}
+{{ m.back(url_for('teacher.dashboard', subject_code=form.subject_code), 'Back to my results') }}
+<div class="card">
+  <h2 style="margin:0">{{ form.subject_name }} <span class="sub">({{ form.subject_code }})</span></h2>
+  <p class="sub">
+    Period {{ form.period_no }} · {{ form.branch }} · Timetable {{ form.timetable }} ·
+    Semester {{ form.semester }} · Published {{ form.results_published_at }}
+  </p>
+  <div class="tiles">
+    <div class="tile"><div class="num">{{ responses }}</div><div class="lbl">Total responses</div></div>
+    <div class="tile"><div class="num">{{ form.title }}</div><div class="lbl">Form</div></div>
+  </div>
+</div>
+
+{% for q in stats %}
+<div class="card">
+  <h3>Q{{ loop.index }}. {{ q.text }}</h3>
+  {% if q.qtype == 'text' %}
+    <p class="sub">{{ q.suggestions|length }} written response(s).</p>
+  {% else %}
+    <p class="sub">{{ q.valid }} valid response(s) to this question.</p>
+    {% for o in q.options %}
+    <div class="stat-row">
+      <span class="stat-label">{{ o.label }}</span>
+      <div class="bar"><i style="width: {{ o.pct }}%"></i></div>
+      <span class="stat-count">{{ o.count }} · {{ o.pct }}%</span>
+    </div>
+    {% endfor %}
+    {% if not q.valid %}<p class="sub">No responses to this question yet.</p>{% endif %}
+  {% endif %}
+</div>
+{% endfor %}
+
+<div class="card">
+  <h2>Student suggestions (anonymous)</h2>
+  <p class="sub">Written comments are shown without any student identity.</p>
+  {% if suggestions.comments %}
+    {% for s in suggestions.comments %}
+      <div class="suggestion">{{ s }}</div>
+    {% endfor %}
+    {% if suggestions.pages > 1 %}
+    <nav class="pagination">
+      {% if suggestions.page > 1 %}
+        <a class="btn btn-ghost btn-sm"
+           href="{{ url_for('teacher.results', form_id=form.id, page=suggestions.page-1) }}">← Prev</a>
+      {% endif %}
+      <span class="page-info">Page {{ suggestions.page }} of {{ suggestions.pages }} ·
+        {{ suggestions.total }} comment(s)</span>
+      {% if suggestions.page < suggestions.pages %}
+        <a class="btn btn-ghost btn-sm"
+           href="{{ url_for('teacher.results', form_id=form.id, page=suggestions.page+1) }}">Next →</a>
+      {% endif %}
+    </nav>
+    {% endif %}
+  {% else %}
+    {{ m.empty('No written suggestions for this session.') }}
+  {% endif %}
+</div>
+{% endblock %}

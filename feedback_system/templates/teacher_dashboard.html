@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% import '_macros.html' as m %}
+{% block title %}My Results — Faculty Feedback{% endblock %}
+{% block body %}
+<h1>Welcome, {{ current_user.name }}</h1>
+<p class="sub">Employee code {{ current_user.emp_code }}. You only ever see results the
+  administrator has published, and only for your own subjects and sessions.</p>
+
+{% if not subjects %}
+  <div class="card">{{ m.empty('No subjects are assigned to you yet.') }}</div>
+{% else %}
+
+  {% if subjects|length > 1 %}
+  <div class="card card-tight">
+    <form method="get" class="inline-form">
+      <div class="field" style="min-width:280px">
+        <label for="subject_code">Subject</label>
+        <select id="subject_code" name="subject_code" onchange="this.form.submit()">
+          <option value="">All my subjects</option>
+          {% for s in subjects %}
+            <option value="{{ s.subject_code }}"
+              {{ 'selected' if s.subject_code == subject_code }}>
+              {{ s.subject_name }} ({{ s.subject_code }}) — {{ s.sessions }} session(s)</option>
+          {% endfor %}
+        </select>
+      </div>
+      <button class="btn btn-ghost" type="submit">Apply</button>
+    </form>
+  </div>
+  {% endif %}
+
+  <div class="tiles mb">
+    <div class="tile"><div class="num">{{ subjects|length }}</div><div class="lbl">My subjects</div></div>
+    <div class="tile"><div class="num">{{ rows|length }}</div><div class="lbl">Published result sets</div></div>
+    <div class="tile"><div class="num">{{ total_published }}</div><div class="lbl">Total published</div></div>
+  </div>
+
+  <div class="card">
+    <h2>Published feedback results</h2>
+    {% if rows %}
+      <div class="grid grid-2">
+        {% for r in rows %}{% set f = r.form %}
+        <div class="card card-tight">
+          <div class="btn-row" style="justify-content:space-between">
+            <strong>{{ f.subject_name }}</strong>
+            <span class="badge badge-published">Published</span>
+          </div>
+          <p class="sub">Period {{ f.period_no }} · {{ f.subject_code }}<br>
+            {{ f.branch }} · Timetable {{ f.timetable }} · Semester {{ f.semester }}<br>
+            {{ f.title }}<br>
+            {{ r.responses }} anonymous response(s) ·
+            published {{ f.results_published_at }}</p>
+          <a class="btn btn-accent btn-sm" href="{{ url_for('teacher.results', form_id=f.id) }}">View results →</a>
+        </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      {{ m.empty('No published results yet.',
+         'Your administrator has not published feedback results for your sessions. Unpublished results stay hidden.') }}
+    {% endif %}
+  </div>
+{% endif %}
+{% endblock %}

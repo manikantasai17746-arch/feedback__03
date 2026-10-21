@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block title %}HOD Dashboard — Faculty Feedback{% endblock %}
+{% block body %}
+<div class="container page">
+  <div class="page-header">
+    <h1>HOD Dashboard</h1>
+    <nav class="subnav">
+      <a href="{{ url_for('hod.dashboard') }}" class="active">Dashboard</a>
+      <a href="{{ url_for('hod.forms') }}">Forms</a>
+      <a href="{{ url_for('hod.results') }}">Results</a>
+      <a href="{{ url_for('hod.performance') }}">Performance</a>
+      <a href="{{ url_for('hod.second_faculty') }}">Second Faculty</a>
+      <a href="{{ url_for('auth.logout') }}">Logout</a>
+    </nav>
+  </div>
+  {% if not stats.branches %}
+  <div class="card alert alert-warning">
+    <strong>No department scope assigned.</strong>
+    Ask an Administrator to import HOD accounts and assign department scopes.
+    Until then this portal shows an empty state only.
+  </div>
+  {% else %}
+  <div class="stat-grid">
+    <div class="stat-card"><div class="stat-label">Departments</div><div class="stat-value">{{ stats.branches|length }}</div>
+      <div class="muted">{% for b in stats.branches %}{{ b.code }}{% if not loop.last %}, {% endif %}{% endfor %}</div></div>
+    <div class="stat-card"><div class="stat-label">Students</div><div class="stat-value">{{ stats.student_count }}</div></div>
+    <div class="stat-card"><div class="stat-label">Faculty</div><div class="stat-value">{{ stats.faculty_count }}</div></div>
+    <div class="stat-card"><div class="stat-label">Forms (draft / open / closed)</div>
+      <div class="stat-value">{{ stats.forms_draft }} / {{ stats.forms_open }} / {{ stats.forms_closed }}</div></div>
+    <div class="stat-card"><div class="stat-label">Second-faculty confirmed</div><div class="stat-value">{{ stats.sfa_confirmed }}</div></div>
+    <div class="stat-card"><div class="stat-label">Second-faculty unresolved</div><div class="stat-value">{{ stats.sfa_unresolved }}</div></div>
+  </div>
+  <div class="card" style="margin-top:1.5rem">
+    <h2>Recent forms</h2>
+    {% if stats.recent_forms %}
+    <table class="data-table">
+      <thead><tr><th>Title</th><th>Category</th><th>Subject</th><th>Branch</th><th>Status</th></tr></thead>
+      <tbody>
+      {% for f in stats.recent_forms %}
+        <tr>
+          <td>{{ f.title }}</td>
+          <td>{{ f.category or 'main' }}</td>
+          <td>{{ f.snapshot_subject_code or '—' }}</td>
+          <td>{{ f.snapshot_branch or '—' }}</td>
+          <td><span class="badge">{{ f.status }}</span></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="muted">No forms yet for your department(s).</p>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

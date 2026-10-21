@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% block title %}Faculty Performance — HOD{% endblock %}
+{% block body %}
+<div class="container page">
+  <div class="page-header">
+    <h1>Faculty Performance</h1>
+    <nav class="subnav">
+      <a href="{{ url_for('hod.dashboard') }}">Dashboard</a>
+      <a href="{{ url_for('hod.forms') }}">Forms</a>
+      <a href="{{ url_for('hod.results') }}">Results</a>
+      <a href="{{ url_for('hod.performance') }}" class="active">Performance</a>
+      <a href="{{ url_for('hod.performance_compare') }}">Compare</a>
+      <a href="{{ url_for('hod.second_faculty') }}">Second Faculty</a>
+      <a href="{{ url_for('auth.logout') }}">Logout</a>
+    </nav>
+  </div>
+
+  <form method="get" class="filter-bar card">
+    <div class="field"><label>Search</label>
+      <input type="search" name="q" value="{{ filters.q }}" placeholder="Name, emp code, subject"></div>
+    <div class="field"><label>Academic year</label>
+      <select name="academic_year_id"><option value="">All</option>
+        {% for y in years %}<option value="{{ y.id }}" {{ 'selected' if filters.academic_year_id == y.id }}>{{ y.name }}</option>{% endfor %}
+      </select></div>
+    <div class="field"><label>Semester</label>
+      <select name="semester_id"><option value="">All</option>
+        {% for s in semesters %}<option value="{{ s.id }}" {{ 'selected' if filters.semester_id == s.id }}>{{ s.number }}</option>{% endfor %}
+      </select></div>
+    <div class="field"><label>Subject code</label>
+      <input type="text" name="subject_code" value="{{ filters.subject_code }}" placeholder="e.g. 2501CS10"></div>
+    <button class="btn" type="submit">Filter</button>
+    <a class="btn btn-ghost" href="{{ url_for('hod.performance') }}">Reset</a>
+  </form>
+
+  <div class="card">
+    <p class="sub">Scores are out of 100. Groups with fewer than 5 valid responses are shown as <strong>N/A</strong> (never 0). Aggregates only — no student identities.</p>
+    <div class="table-wrap">
+      <table class="data data-table">
+        <thead>
+          <tr>
+            <th>Faculty</th><th>Emp</th><th>Subject</th><th>Form</th>
+            <th>Responses</th><th>Overall /100</th><th>Status</th><th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in rows %}
+          <tr>
+            <td class="wrap">{{ r.teacher_name or '—' }}</td>
+            <td>{{ r.teacher_emp_code or '—' }}</td>
+            <td class="wrap">{{ r.subject_code or '—' }}{% if r.subject_name %} · {{ r.subject_name }}{% endif %}</td>
+            <td class="wrap">#{{ r.form_id }} {{ r.title }}</td>
+            <td>{{ r.valid_responses }}</td>
+            <td>
+              {% if r.hidden or r.overall_score is none %}
+                <span class="badge">N/A</span>
+                {% if r.reason %}<span class="muted" style="font-size:.8rem">{{ r.reason }}</span>{% endif %}
+              {% else %}
+                <strong>{{ '%.1f'|format(r.overall_score) }}</strong>
+              {% endif %}
+            </td>
+            <td><span class="badge">{{ r.status }}</span></td>
+            <td>
+              {% if r.teacher_user_id %}
+              <a class="btn btn-ghost btn-sm" href="{{ url_for('hod.performance_detail', teacher_id=r.teacher_user_id) }}">Detail</a>
+              {% endif %}
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="8" class="muted">No faculty performance data for the current filters.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

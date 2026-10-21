@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% import '_macros.html' as m %}
+{% block title %}{{ form.title }} — Feedback{% endblock %}
+{% block body %}
+{{ m.back(url_for('student.dashboard'), 'Back to my feedback') }}
+<div class="card">
+  <div class="btn-row" style="justify-content:space-between">
+    <h2 style="margin:0">{{ form.title }}</h2>
+    {{ m.status_badge(form.status) }}
+  </div>
+  <p class="sub">
+    {{ form.subject_name }} ({{ form.subject_code }}) · Period {{ form.period_no }} ·
+    Teacher: {{ form.teacher_name }}<br>
+    {{ form.branch }} · Timetable {{ form.timetable }} · Semester {{ form.semester }}
+  </p>
+  {% if form.instructions %}<p>{{ form.instructions }}</p>{% endif %}
+  <p class="sub">🔒 Your answers are anonymous. Your name and roll number are never linked to
+    individual answers shown to teachers.</p>
+</div>
+
+{% if already %}
+  <div class="card">
+    <h2>✅ Feedback already submitted</h2>
+    <p class="sub">Submitted on {{ already.submitted_at }}. Thank you — you cannot submit twice
+      for the same session.</p>
+    <a class="btn btn-ghost" href="{{ url_for('student.dashboard') }}">Back to my feedback</a>
+  </div>
+{% elif form.status != 'open' %}
+  <div class="card">
+    <h2>This form is {{ status_labels.get(form.status, form.status) }}</h2>
+    <p class="sub">It is no longer accepting responses.</p>
+    <a class="btn btn-ghost" href="{{ url_for('student.dashboard') }}">Back to my feedback</a>
+  </div>
+{% else %}
+<form method="post" action="{{ url_for('student.submit', form_id=form.id) }}">
+  <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+  {% for q in questions %}
+  <div class="card">
+    <div class="btn-row" style="justify-content:space-between">
+      <h3 style="margin:0">Q{{ loop.index }}. {{ q.text }}</h3>
+      {% if q.is_required %}<span class="badge badge-closed">Required</span>
+      {% else %}<span class="badge badge-draft">Optional</span>{% endif %}
+    </div>
+    <div class="mt"></div>
+    {% set saved = form_data.get('q_' ~ q.id) if form_data is defined and form_data else None %}
+    {% if q.qtype == 'text' %}
+      <textarea name="q_{{ q.id }}" rows="3" maxlength="2000"
+        placeholder="Write your suggestion (optional if not required)">{{ saved or '' }}</textarea>
+    {% elif q.qtype == 'multiple_choice' %}
+      <div class="opts">
+        {% for o in q.options %}
+        <label class="opt">
+          <input type="checkbox" name="q_{{ q.id }}" value="{{ o.id }}"
+            {% if form_data is defined and form_data and o.id|string in form_data.getlist('q_' ~ q.id) %}checked{% endif %}>
+          {{ o.label }}</label>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="opts">
+        {% for o in q.options %}
+        <label class="opt">
+          <input type="radio" name="q_{{ q.id }}" value="{{ o.id }}"
+            {% if saved == o.id|string %}checked{% endif %}>
+          {{ o.label }}</label>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+  {% endfor %}
+  <div class="btn-row">
+    <button class="btn btn-accent" type="submit">Submit feedback</button>
+    <a class="btn btn-ghost" href="{{ url_for('student.dashboard') }}">Cancel</a>
+  </div>
+</form>
+{% endif %}
+{% endblock %}

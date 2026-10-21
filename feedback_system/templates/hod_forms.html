@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}HOD Forms{% endblock %}
+{% block body %}
+<div class="container page">
+  <div class="page-header">
+    <h1>Department forms</h1>
+    <nav class="subnav">
+      <a href="{{ url_for('hod.dashboard') }}">Dashboard</a>
+      <a href="{{ url_for('hod.forms') }}" class="active">Forms</a>
+      <a href="{{ url_for('hod.results') }}">Results</a>
+      <a href="{{ url_for('hod.second_faculty') }}">Second Faculty</a>
+    </nav>
+  </div>
+  {% if not branches %}
+  <div class="alert alert-warning">No department scope assigned.</div>
+  {% else %}
+  <p>Departments: {% for b in branches %}<span class="badge">{{ b.code }}</span> {% endfor %}</p>
+  {% if forms %}
+  <table class="data-table">
+    <thead><tr><th>Title</th><th>Category</th><th>Subject</th><th>Status</th><th>Created</th></tr></thead>
+    <tbody>{% for f in forms %}<tr>
+      <td>{{ f.title }}</td><td>{{ f.category or 'main' }}</td>
+      <td>{{ f.snapshot_subject_code or '—' }}</td>
+      <td>{{ f.status }}</td><td>{{ f.created_at }}</td>
+    </tr>{% endfor %}</tbody>
+  </table>
+  {% else %}<p class="muted">No forms for your department yet.</p>{% endif %}
+  {% endif %}
+</div>
+{% endblock %}

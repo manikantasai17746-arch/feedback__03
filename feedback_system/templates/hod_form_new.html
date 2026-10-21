@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block title %}Create Form — HOD{% endblock %}
+{% block body %}
+<div class="container page">
+  <div class="page-header"><h1>Create feedback form</h1></div>
+  {% if not branches %}
+  <div class="alert alert-warning">No department scope.</div>
+  {% else %}
+  <div class="card">
+    <p class="muted">HOD form creation reuses the shared form services and is restricted
+      to your authorised department(s). Full builder integration with the existing
+      admin form builder is available; publish does not require Dean approval.</p>
+    <p>Departments: {% for b in branches %}<span class="badge">{{ b.code }}</span> {% endfor %}</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
